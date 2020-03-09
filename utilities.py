@@ -1,5 +1,5 @@
 import random
-from numerics import sin, cos, tan, avg, rnd
+from numerics import sin, cos, tan, avg, rnd, abs
 
 def locByVal(val):
     return (
@@ -8,6 +8,13 @@ def locByVal(val):
             (0.5, -0.5, 0.5), (-0.5, -0.5, 0.5)
            )[val]
         
+def generate2(x, y, z):
+    a = ((x ** 2) + y) * float(tan(x)) * y * float(cos(z))
+    if a != 0:
+        return -1 * float(abs(1 / a))
+    else:
+        return 0
+
 def generate(xIn, yIn, zIn):    #Function which produces semi-random values based on the supplied coordinates.
     i = -int(xIn * yIn * (10 + zIn))
     j = int(xIn * yIn * (10 + zIn))

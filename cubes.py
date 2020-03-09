@@ -27,6 +27,7 @@ class mainWindow(QMainWindow):    #Main class.
     marchActive = False
     limit = -1
     meshPoints = []
+    dataFieldSize = (7, 7, 7)
     
     def keyPressEvent(self, event):    #This is the keypress detector.
         try:
@@ -57,7 +58,7 @@ class mainWindow(QMainWindow):    #Main class.
         self.sizeX = 700    #Variables used for the setting of the size of everything
         self.sizeY = 600
         self.setGeometry(0, 0, self.sizeX + 50, self.sizeY)    #Set the window size
-        self.initData(4, 4, 4)
+        self.initData(self.dataFieldSize)
         self.setupUI()
 
     def setupUI(self):
@@ -81,7 +82,8 @@ class mainWindow(QMainWindow):    #Main class.
         self.marchButton.setText('March!')
         self.marchButton.clicked.connect(self.marchStep)
 
-    def initData(self, sizeX, sizeY, sizeZ):
+    def initData(self, size):
+        sizeX, sizeY, sizeZ = size
         marchSizeX = sizeX - 1
         marchSizeY = sizeY - 1
         marchSizeZ = sizeZ - 1
