@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
                              QApplication, QMainWindow, QSlider,
                              QOpenGLWidget, QLabel, QPushButton
                             )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from OpenGL.GL import (
                        glLoadIdentity, glTranslatef, glRotatef,
                        glClear, glBegin, glEnd,
@@ -27,6 +27,7 @@ class mainWindow(QMainWindow):    #Main class.
     marchActive = False
     limit = -1.0
     meshPoints = []
+    animationActive = False
     
     def keyPressEvent(self, event):    #This is the keypress detector.
         try:
@@ -68,6 +69,8 @@ class mainWindow(QMainWindow):    #Main class.
             self.setGeometry(0, 0, self.sizeX + 50, self.sizeY)    #Set the window size
         self.initData(4, 4, 4)
         self.setupUI()
+        if self.opMode == 'show':
+            self.animateStep()
 
     def setupUI(self):
         self.openGLWidget = QOpenGLWidget(self)    #Create the GLWidget
@@ -290,8 +293,28 @@ class mainWindow(QMainWindow):    #Main class.
                 return dp
         return False
 
-    def animate(self):
-        pass
+    def animateStep(self):
+        if not self.animationActive:
+            self.animationTimer = QTimer()
+            self.animationTimer.start(250)
+            self.animationTimer.timeout.connect(self.animateStep)
+            self.nav(hVal = -15, vVal = 20, zVal = -2)
+            self.animationActive = True
+            self.limit = 0
+            self.filter(0)
+
+        if self.currentStep == -1:
+            for d in self.dataPoints:
+                if d.shape in self.shapes:
+                    self.shapes.remove(d.shape)
+            print(self.shapes)
+            self.dataPoints = []
+            self.initData(4, 4, 4)
+            self.filter(0)
+            self.animationTimer.stop()
+
+        self.marchStep()
+        self.nav(hVal = 2)
 
 if '/s' in sys.argv:
     modeToRun = 'show'
