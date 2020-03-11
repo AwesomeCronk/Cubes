@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (
                              QApplication, QMainWindow, QSlider,
                              QOpenGLWidget, QLabel, QPushButton
                             )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 from OpenGL.GL import (
                        glLoadIdentity, glTranslatef, glRotatef,
                        glClear, glBegin, glEnd,
@@ -27,7 +27,7 @@ class mainWindow(QMainWindow):    #Main class.
     marchActive = False
     limit = -1
     meshPoints = []
-    dataFieldSize = (7, 7, 7)
+    dataFieldSize = (3, 3, 3)
     
     def keyPressEvent(self, event):    #This is the keypress detector.
         try:
@@ -110,7 +110,7 @@ class mainWindow(QMainWindow):    #Main class.
                     self.shapes.append(dpShape)
 
     def marchStep(self):
-        print(self.currentStep)
+        #print(self.currentStep)
         if not self.marchActive:    #initialize
             marchAddr = len(self.shapes)
             self.marchingCube = cube(size = 1)
@@ -119,6 +119,9 @@ class mainWindow(QMainWindow):    #Main class.
             self.currentStep = 0
             self.mainMesh = mesh()
             self.shapes.append(self.mainMesh)
+            self.marchTimer = QTimer()
+            self.marchTimer.start(250)
+            self.marchTimer.timeout.connect(self.marchStep)
 
         if self.currentStep == len(self.marchPoints):    #1 step after last
             self.marchingCube.hide()
@@ -143,7 +146,7 @@ class mainWindow(QMainWindow):    #Main class.
         if self.currentStep == -1:    #1 step before first
             self.marchingCube.hide()
             self.currentStep += 1
-            print('self.meshPoints: {}\nself.meshes: {}\nself.shapes: {}'.format(self.meshPoints, self.meshes, self.shapes))
+            #print('self.meshPoints: {}\nself.meshes: {}\nself.shapes: {}'.format(self.meshPoints, self.meshes, self.shapes))
             self.openGLWidget.update()
             self.mainMesh = mesh()
             self.shapes.append(self.mainMesh)
@@ -189,14 +192,14 @@ class mainWindow(QMainWindow):    #Main class.
         for i in range(8):
             if points[i].value > self.limit:
                 activeConfig += int(2 ** i)
-        print('Configuration number: {}'.format(activeConfig))
+        #print('Configuration number: {}'.format(activeConfig))
         if activeConfig > 127:
             activeConfig = 255 - activeConfig
-        print('Configuration number: {}'.format(activeConfig))
+        #print('Configuration number: {}'.format(activeConfig))
         
         config = table[activeConfig]
-        print('Configuration: {}'.format(config))
-        print('number of points: {}'.format(len(MPs)))
+        #print('Configuration: {}'.format(config))
+        #print('number of points: {}'.format(len(MPs)))
         for data in config:
             a, b, c = data
             locA = MPs[a].location
@@ -204,7 +207,7 @@ class mainWindow(QMainWindow):    #Main class.
             locC = MPs[c].location
             self.mainMesh.addFacet((locA, locB, locC))
 
-        print('stepping')
+        #print('stepping')
         self.currentStep += 1
         self.openGLWidget.update()
 

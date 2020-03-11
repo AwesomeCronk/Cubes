@@ -28,13 +28,16 @@ class mainWindow(QMainWindow):    #Main class.
     limit = -1.0
     meshPoints = []
     animationActive = False
+    anLoops = 0
+    printConfigs = False
+    dataFieldSize = (3, 3, 3)
     
     def keyPressEvent(self, event):    #This is the keypress detector.
         try:
             key = event.key()
         except:
             key = -1    
-        print(key)
+        #print(key)
         if key == 87:
             self.nav(vVal = 5)
         elif key == 65:
@@ -67,7 +70,7 @@ class mainWindow(QMainWindow):    #Main class.
             self.sizeX = 500
             self.sizeY = 500
             self.setGeometry(0, 0, self.sizeX + 50, self.sizeY)    #Set the window size
-        self.initData(4, 4, 4)
+        self.initData(self.dataFieldSize)
         self.setupUI()
         if self.opMode == 'show':
             self.animateStep()
@@ -94,7 +97,8 @@ class mainWindow(QMainWindow):    #Main class.
             self.marchButton.setText('March!')
             self.marchButton.clicked.connect(self.marchStep)
 
-    def initData(self, sizeX, sizeY, sizeZ):
+    def initData(self, fieldSize):
+        sizeX, sizeY, sizeZ = fieldSize
         marchSizeX = sizeX - 1
         marchSizeY = sizeY - 1
         marchSizeZ = sizeZ - 1
@@ -121,7 +125,7 @@ class mainWindow(QMainWindow):    #Main class.
                     self.shapes.append(dpShape)
 
     def marchStep(self):
-        print(self.currentStep)
+        #print(self.currentStep)
         if not self.marchActive:    #initialize
             marchAddr = len(self.shapes)
             self.marchingCube = cube(size = 1)
@@ -154,7 +158,7 @@ class mainWindow(QMainWindow):    #Main class.
         if self.currentStep == -1:    #1 step before first
             self.marchingCube.hide()
             self.currentStep += 1
-            print('self.meshPoints: {}\nself.meshes: {}\nself.shapes: {}'.format(self.meshPoints, self.meshes, self.shapes))
+            #print('self.meshPoints: {}\nself.meshes: {}\nself.shapes: {}'.format(self.meshPoints, self.meshes, self.shapes))
             self.openGLWidget.update()
             self.mainMesh = mesh()
             self.shapes.append(self.mainMesh)
@@ -200,22 +204,21 @@ class mainWindow(QMainWindow):    #Main class.
         for i in range(8):
             if points[i].value > self.limit:
                 activeConfig += int(2 ** i)
-        print('Configuration number: {}'.format(activeConfig))
+        oldConfig = activeConfig
         if activeConfig > 127:
             activeConfig = 255 - activeConfig
-        print('Configuration number: {}'.format(activeConfig))
+        if self.printConfigs:
+            print('Old configuration number: {}\nConfiguration number: {}'.format(oldConfig, activeConfig))
         
         config = table[activeConfig]
-        print('Configuration: {}'.format(config))
-        print('number of points: {}'.format(len(MPs)))
+        if self.printConfigs:
+            print('Configuration: {}\nnumber of points: {}'.format(config, len(MPs)))
         for data in config:
             a, b, c = data
             locA = MPs[a].location
             locB = MPs[b].location
             locC = MPs[c].location
             self.mainMesh.addFacet((locA, locB, locC))
-
-        print('stepping')
         self.currentStep += 1
         self.openGLWidget.update()
 
@@ -296,7 +299,7 @@ class mainWindow(QMainWindow):    #Main class.
     def animateStep(self):
         if not self.animationActive:
             self.animationTimer = QTimer()
-            self.animationTimer.start(250)
+            self.animationTimer.start(1000)
             self.animationTimer.timeout.connect(self.animateStep)
             self.nav(hVal = -15, vVal = 20, zVal = -2)
             self.animationActive = True
@@ -304,14 +307,33 @@ class mainWindow(QMainWindow):    #Main class.
             self.filter(0)
 
         if self.currentStep == -1:
-            for d in self.dataPoints:
-                if d.shape in self.shapes:
-                    self.shapes.remove(d.shape)
-            print(self.shapes)
+            #print('current shapes: {}'.format(len(self.shapes)))
+            numMarchingCubes = 0
+            numMainMeshes = 0
+            cycles = 0
+            removedShapes = 0
+            keptShapes = 0
+#            for s in self.shapes:
+ #               if s == self.marchingCube:
+  #                  numMarchingCubes += 1
+   #             if s == self.mainMesh:
+    #                numMainMeshes += 1
+     #           if s != self.marchingCube and s != self.mainMesh:
+      #              removedShapes += 1
+       #             self.shapes.remove(s)
+        #        else:
+         #           keptShapes += 1
+          #      cycles += 1
+           # print('cycled through {} shapes\nremoved {} shapes\n kept {} shapes\nremaining shapes: {}\nnumber of marchingCubes: {}\nnumber of mainMeshes: {}'.format(cycles, removedShapes, keptShapes, len(self.shapes), numMarchingCubes, numMainMeshes))
+            self.shapes = [self.marchingCube]
+            print("\n\nself.shapes: {}\nself.meshPoints: {}".format(self.shapes, self.meshPoints))
             self.dataPoints = []
-            self.initData(4, 4, 4)
+            self.initData(self.dataFieldSize)
             self.filter(0)
-            self.animationTimer.stop()
+            self.anLoops += 1
+#            if self.anLoops == 2:
+ #               self.animationTimer.stop()
+  #              exit()
 
         self.marchStep()
         self.nav(hVal = 2)
